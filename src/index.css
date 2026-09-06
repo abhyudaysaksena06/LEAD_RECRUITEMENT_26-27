@@ -1,0 +1,35 @@
+/* Standalone global reset — dark immersive base for all imported pages */
+:root {
+  --lead-bg: #05060a;
+  --lead-text: #e8e9f0;
+  --lead-accent: #aa3bff;
+  --sans: 'Segoe UI', system-ui, Roboto, sans-serif;
+
+  color-scheme: dark;
+  font-family: var(--sans);
+  color: var(--lead-text);
+  background: var(--lead-bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+  background: var(--lead-bg);
+}
+
+#root {
+  width: 100%;
+  min-height: 100svh;
+}
+
+img {
+  max-width: 100%;
+}

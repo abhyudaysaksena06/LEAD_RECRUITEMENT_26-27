@@ -1,0 +1,410 @@
+/* ================================================================
+   Registration Page — Dossier / Parchment aesthetic
+   Inspired by lead-intel-x.vercel.app/register
+   ================================================================ */
+
+/* ===== Page wrapper ===== */
+.reg-page {
+  --reg-bg: #0d0906;
+  --paper: #c4b393;
+  --paper-dark: #a89474;
+  --paper-edge: #8a7a5e;
+  --ink: #1a1510;
+  --ink-muted: #3d3428;
+  --accent: #4bb8e8;
+  --pin: #be1e1e;
+  --field-bg: #1a1510;
+  --field-border: #3d3428;
+  --field-text: #c8b89a;
+  --mono: 'IBM Plex Mono', ui-monospace, 'Cascadia Code', Menlo, Consolas, monospace;
+  --display: 'Oswald', 'Arial Narrow', sans-serif;
+  --typewriter: 'Special Elite', 'Courier New', monospace;
+
+  min-height: 100vh;
+  background: var(--reg-bg);
+  color: #e0d6c4;
+  padding: 6rem 1rem 4rem;
+  box-sizing: border-box;
+}
+
+/* ===== Header (above the parchment) ===== */
+.reg-header {
+  max-width: 56rem;
+  margin: 0 auto 2rem;
+  padding: 0 0.5rem;
+}
+
+.reg-subtitle {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  font-weight: 400;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #7a7060;
+  margin: 0 0 0.75rem;
+}
+
+.reg-title {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: clamp(2.2rem, 6vw, 3.8rem);
+  line-height: 1.05;
+  text-transform: uppercase;
+  color: #e8e0d0;
+  margin: 0 0 1rem;
+}
+
+.reg-title__accent {
+  background: linear-gradient(135deg, var(--accent), #7dd3fc);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.reg-desc {
+  font-family: var(--typewriter);
+  font-size: 0.92rem;
+  line-height: 1.65;
+  color: #9a8e7a;
+  max-width: 40rem;
+  margin: 0;
+}
+
+/* ===== Parchment card ===== */
+.reg-parchment {
+  position: relative;
+  max-width: 56rem;
+  margin: 0 auto;
+  background:
+    /* subtle noise layer */
+    repeating-conic-gradient(
+      rgba(0, 0, 0, 0.015) 0% 25%,
+      transparent 0% 50%
+    ) 0 0 / 4px 4px,
+    /* aged paper gradient */
+    linear-gradient(
+      168deg,
+      #d4c4a0 0%,
+      #c8b89a 18%,
+      #bca882 42%,
+      #c0ac8a 68%,
+      #b8a07a 100%
+    );
+  border-radius: 4px;
+  padding: 2.5rem 2rem 2rem;
+  box-shadow:
+    0 2px 30px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+}
+
+/* Darkened edges — vignette effect on the paper */
+.reg-parchment::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 4px;
+  pointer-events: none;
+  box-shadow:
+    inset 0 0 60px rgba(0, 0, 0, 0.18),
+    inset 0 0 120px rgba(0, 0, 0, 0.08);
+}
+
+/* ===== Pin dots ===== */
+.reg-pin {
+  position: absolute;
+  top: 12px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--pin);
+  box-shadow:
+    0 0 0 2px #8a1212,
+    0 2px 6px rgba(0, 0, 0, 0.4);
+  z-index: 2;
+}
+
+.reg-pin--left  { left:  12px; }
+.reg-pin--right { right: 12px; }
+
+.reg-pin::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 0 rgba(190, 30, 30, 0.7);
+  animation: pin-pulse 2s infinite;
+}
+
+@keyframes pin-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(190, 30, 30, 0.7); }
+  70%  { box-shadow: 0 0 0 8px rgba(190, 30, 30, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(190, 30, 30, 0); }
+}
+
+/* ===== Section blocks inside parchment ===== */
+.reg-section {
+  margin-bottom: 2.25rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.reg-section:last-of-type {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.reg-section__title {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: 1.15rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink);
+  margin: 0 0 1.25rem;
+}
+
+/* ===== Form grid layouts ===== */
+.reg-row {
+  display: grid;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.reg-row--2 {
+  grid-template-columns: 1fr 1fr;
+}
+
+.reg-row--3 {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+@media (max-width: 640px) {
+  .reg-row--2,
+  .reg-row--3 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ===== Field labels ===== */
+.reg-label {
+  display: block;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-muted);
+  margin-bottom: 0.4rem;
+}
+
+/* Required field asterisk */
+.reg-req {
+  color: #be1e1e;
+  font-weight: 600;
+  margin-left: 2px;
+}
+
+/* ===== Text inputs & textareas ===== */
+.reg-input,
+.reg-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  font-family: var(--typewriter);
+  font-size: 0.88rem;
+  color: var(--field-text);
+  background: var(--field-bg);
+  border: 1px solid var(--field-border);
+  border-radius: 4px;
+  padding: 0.7rem 0.85rem;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.reg-input::placeholder,
+.reg-textarea::placeholder {
+  color: #5a5040;
+  font-style: normal;
+}
+
+.reg-input:focus,
+.reg-textarea:focus {
+  border-color: #6a5a42;
+  box-shadow: 0 0 0 2px rgba(106, 90, 66, 0.25);
+}
+
+.reg-textarea {
+  resize: vertical;
+  min-height: 5rem;
+  line-height: 1.5;
+}
+
+/* ===== Toggle button groups ===== */
+.reg-toggle-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.reg-toggle-btn {
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  font-weight: 500;
+  padding: 0.6rem 1.1rem;
+  background: transparent;
+  color: var(--ink);
+  border: 1.5px solid var(--ink-muted);
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  user-select: none;
+  min-width: 3rem;
+  text-align: center;
+}
+
+.reg-toggle-btn:hover {
+  border-color: var(--ink);
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.reg-toggle-btn.is-active {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+
+/* ===== Helper / hint text ===== */
+.reg-hint {
+  font-family: var(--typewriter);
+  font-size: 0.76rem;
+  color: #6a5a42;
+  margin-top: 0.5rem;
+}
+
+/* ===== Footer row (submit + deadline) ===== */
+.reg-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+}
+
+/* ===== Submit button ===== */
+.reg-submit {
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  padding: 0.85rem 2.2rem;
+  background: var(--ink);
+  color: var(--paper);
+  border: 2px solid var(--ink);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.22s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.reg-submit:hover {
+  background: #2a2418;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  transform: translateY(-1px);
+}
+
+.reg-submit:active {
+  transform: translateY(0);
+}
+
+.reg-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ===== Deadline label ===== */
+.reg-deadline {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #6a5a42;
+}
+
+/* ===== Success overlay ===== */
+.reg-success {
+  text-align: center;
+  padding: 4rem 2rem;
+}
+
+.reg-success__icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.reg-success__title {
+  font-family: var(--display);
+  font-size: 1.8rem;
+  text-transform: uppercase;
+  color: var(--ink);
+  margin: 0 0 0.75rem;
+}
+
+.reg-success__text {
+  font-family: var(--typewriter);
+  font-size: 0.92rem;
+  color: var(--ink-muted);
+  max-width: 28rem;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* ===== Field group wrapper ===== */
+.reg-field {
+  margin-bottom: 0;
+}
+
+/* ===== Responsive tweaks ===== */
+@media (max-width: 640px) {
+  .reg-page {
+    padding: 2rem 0.75rem 3rem;
+  }
+
+  .reg-parchment {
+    padding: 2rem 1.25rem 1.5rem;
+  }
+
+  .reg-title {
+    font-size: 2rem;
+  }
+
+  .reg-footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .reg-submit {
+    width: 100%;
+    text-align: center;
+  }
+
+  .reg-deadline {
+    text-align: center;
+  }
+}
+
+.reg-error {
+  color: #be1e1e;
+  font-size: 0.9rem;
+  margin: 0 0 0.75rem;
+}
+
+.reg-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

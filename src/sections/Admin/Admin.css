@@ -1,0 +1,245 @@
+/* ================================================================
+   Admin Console — restricted dashboard for reviewing applications
+   ================================================================ */
+
+.admin-page {
+  --admin-bg: #0d0906;
+  --admin-panel: #141009;
+  --admin-border: #2c2519;
+  --admin-text: #e0d6c4;
+  --admin-muted: #7a7060;
+  --admin-accent: #4bb8e8;
+  --admin-danger: #be1e1e;
+  --mono: 'IBM Plex Mono', ui-monospace, 'Cascadia Code', Menlo, Consolas, monospace;
+  --display: 'Oswald', 'Arial Narrow', sans-serif;
+
+  min-height: 100vh;
+  background: var(--admin-bg);
+  color: var(--admin-text);
+  padding: 6rem 1.25rem 4rem;
+  box-sizing: border-box;
+}
+
+.admin-kicker {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--admin-muted);
+  margin: 0 0 0.6rem;
+}
+
+/* ===== Login ===== */
+.admin-login {
+  display: flex;
+  justify-content: center;
+  padding-top: 2rem;
+}
+
+.admin-login__card {
+  width: 100%;
+  max-width: 24rem;
+  background: var(--admin-panel);
+  border: 1px solid var(--admin-border);
+  border-radius: 0.5rem;
+  padding: 2rem 1.75rem;
+}
+
+.admin-login__title {
+  font-family: var(--display);
+  font-size: 2rem;
+  text-transform: uppercase;
+  margin: 0 0 0.5rem;
+}
+
+.admin-login__hint {
+  font-size: 0.85rem;
+  color: var(--admin-muted);
+  margin: 0 0 1.5rem;
+  line-height: 1.5;
+}
+
+/* ===== Fields ===== */
+.admin-label {
+  display: block;
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--admin-muted);
+  margin: 0 0 0.4rem;
+}
+
+.admin-input {
+  width: 100%;
+  box-sizing: border-box;
+  background: #0b0805;
+  border: 1px solid var(--admin-border);
+  border-radius: 0.25rem;
+  color: var(--admin-text);
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  padding: 0.6rem 0.7rem;
+  margin: 0 0 1rem;
+}
+
+.admin-input:focus {
+  outline: none;
+  border-color: var(--admin-accent);
+}
+
+.admin-search {
+  max-width: 28rem;
+  margin: 1.5rem 0 1rem;
+}
+
+/* ===== Buttons ===== */
+.admin-btn {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--admin-text);
+  background: #1c170e;
+  border: 1px solid var(--admin-border);
+  border-radius: 0.25rem;
+  padding: 0.55rem 1rem;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.admin-btn:hover:not(:disabled) {
+  border-color: var(--admin-accent);
+  color: var(--admin-accent);
+}
+
+.admin-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.admin-btn--primary {
+  width: 100%;
+  background: var(--admin-accent);
+  border-color: var(--admin-accent);
+  color: #06121a;
+  font-weight: 600;
+}
+
+.admin-btn--primary:hover:not(:disabled) {
+  color: #06121a;
+  opacity: 0.9;
+}
+
+.admin-btn--ghost {
+  background: transparent;
+}
+
+/* ===== Dashboard ===== */
+.admin-dash {
+  max-width: 90rem;
+  margin: 0 auto;
+}
+
+.admin-dash__head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.admin-dash__title {
+  font-family: var(--display);
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  text-transform: uppercase;
+  margin: 0 0 0.4rem;
+}
+
+.admin-dash__meta {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  color: var(--admin-muted);
+  margin: 0;
+}
+
+.admin-dash__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* ===== Table ===== */
+.admin-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--admin-border);
+  border-radius: 0.5rem;
+  background: var(--admin-panel);
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+
+.admin-table th {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-align: left;
+  color: var(--admin-muted);
+  background: #100c07;
+  padding: 0.7rem 0.8rem;
+  border-bottom: 1px solid var(--admin-border);
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+}
+
+.admin-table td {
+  padding: 0.65rem 0.8rem;
+  border-bottom: 1px solid #1e1810;
+  vertical-align: top;
+  max-width: 16rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-table tbody tr {
+  cursor: pointer;
+}
+
+.admin-table tbody tr:hover {
+  background: #191308;
+}
+
+.admin-table tr.is-expanded td {
+  white-space: pre-wrap;
+  max-width: 22rem;
+  overflow: visible;
+}
+
+/* ===== States ===== */
+.admin-error {
+  color: var(--admin-danger);
+  font-size: 0.85rem;
+  margin: 0 0 1rem;
+}
+
+.admin-empty {
+  color: var(--admin-muted);
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  padding: 2rem 0;
+  text-align: center;
+}
+
+.admin-foot {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--admin-muted);
+  margin: 0.8rem 0 0;
+}
