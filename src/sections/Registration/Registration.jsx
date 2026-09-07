@@ -166,13 +166,6 @@ export default function Registration() {
               </div>
             </div>
 
-            <div className="reg-success__email-notice">
-              <span className="reg-success__email-icon">✉️</span>
-              <p>
-                A confirmation email has been dispatched to <strong>{form.email}</strong>. If you do not see it within a few minutes, kindly check your Spam/Junk or Promotions tab.
-              </p>
-            </div>
-
             <button
               type="button"
               className="reg-success__reset-btn"
