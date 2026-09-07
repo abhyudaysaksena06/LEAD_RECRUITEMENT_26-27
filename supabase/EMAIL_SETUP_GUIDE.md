@@ -46,9 +46,41 @@ cannot choose the recipient or inject content into the message.
 
 ---
 
+## Quick start (no terminal)
+
+Everything can be done from the browser; you do not need a local checkout.
+
+1. **Resend key** — sign up at [resend.com](https://resend.com), then
+   **API Keys → Create API Key**, copy the `re_...` value.
+2. **Create the function** — Supabase Dashboard → **Edge Functions** →
+   **Deploy a new function** → name it exactly `send-confirmation-email` →
+   paste the contents of
+   [`supabase/functions/send-confirmation-email/index.ts`](functions/send-confirmation-email/index.ts)
+   → Deploy. Leave "Verify JWT" **enabled**.
+3. **Add the secrets** — Edge Functions → **Secrets**:
+   | Name | Value |
+   |---|---|
+   | `RESEND_API_KEY` | your `re_...` key |
+   | `WHATSAPP_COMMUNITY_URL` | your real WhatsApp invite link |
+   | `INSTAGRAM_URL` | `https://instagram.com/lead_tiet` |
+   | `FROM_EMAIL` | optional; defaults to `onboarding@resend.dev` |
+4. **Run the SQL** — SQL Editor → paste
+   [`supabase/dashboard-setup.sql`](dashboard-setup.sql), replace the two
+   placeholders it names at the top, → **Run**. This creates the table, the
+   email columns, and the trigger that automates the send.
+5. **Test** — submit the form yourself, then in the SQL Editor:
+   ```sql
+   select email, email_sent_at, email_error
+   from registrations order by created_at desc limit 5;
+   ```
+   `email_sent_at` set and `email_error` null means it works.
+
+---
+
 ## Quick start (scripted)
 
-Steps 2-4 below are automated. Do Step 1 by hand (it needs a browser), then:
+If you do have a local checkout, steps 2-4 below are automated instead. Do
+Step 1 by hand (it needs a browser), then:
 
 ```bash
 ./scripts/setup-email.sh
