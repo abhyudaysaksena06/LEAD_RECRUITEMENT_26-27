@@ -2,8 +2,9 @@
 // Update these links with your actual URLs whenever you're ready!
 
 export const COMMUNITY_LINKS = {
-  // Replace with your actual WhatsApp community or group invite link
-  whatsappCommunityUrl: 'https://chat.whatsapp.com/YOUR_COMMUNITY_INVITE_CODE',
+  // Official WhatsApp community — all interview rounds, task allocations and
+  // shortlists are communicated here.
+  whatsappCommunityUrl: 'https://chat.whatsapp.com/DZK01G7jufl0H8yVIr7m6v',
 
   // Official Instagram profile
   instagramUrl: 'https://instagram.com/lead_tiet',
