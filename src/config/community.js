@@ -16,3 +16,9 @@ export const COMMUNITY_LINKS = {
   societyName: 'LEAD Society',
   institution: 'Thapar Institute of Engineering & Technology (TIET), Patiala',
 }
+
+// True once whatsappCommunityUrl above has been replaced with a real invite.
+// The success screen hides the join button while it is still the placeholder,
+// so applicants are never shown a dead link.
+export const HAS_WHATSAPP_COMMUNITY_URL =
+  !COMMUNITY_LINKS.whatsappCommunityUrl.includes('YOUR_COMMUNITY_INVITE_CODE')

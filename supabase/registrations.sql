@@ -16,8 +16,18 @@ create table if not exists public.registrations (
   skills text,
   experience text,
   other_societies text,
-  anything_else text
+  anything_else text,
+  -- Stamped by the send-confirmation-email Edge Function when it claims the
+  -- send. Non-null means the confirmation email has gone out, which is what
+  -- keeps the database webhook and the client fallback from both mailing.
+  email_sent_at timestamptz,
+  -- Last delivery error, if an attempt failed and released its claim.
+  email_error text
 );
+
+-- For databases created before these columns existed.
+alter table public.registrations add column if not exists email_sent_at timestamptz;
+alter table public.registrations add column if not exists email_error text;
 
 alter table public.registrations enable row level security;
 
@@ -26,6 +36,10 @@ create policy "anon can insert registrations"
   on public.registrations for insert
   to anon
   with check (true);
+
+-- Applicants must not be able to pre-set the email bookkeeping columns; only
+-- the Edge Function (service role) writes them.
+revoke insert (email_sent_at, email_error) on public.registrations from anon;
 
 -- Signed-in admins (any Supabase Auth user you create in the dashboard)
 -- can read every application from the /admin console.

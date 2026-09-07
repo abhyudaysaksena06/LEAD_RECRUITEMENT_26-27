@@ -14,14 +14,35 @@ Saved into Supabase (public.registrations)
         │
         ├──► (1) Instant on-screen "Join WhatsApp Community" button displays immediately
         │
-        └──► (2) Supabase Database Webhook fires automatically in the cloud
-                    │
-                    ▼
+        ├──► (2) Supabase Database Webhook fires automatically in the cloud
+        │              │
+        └──► (3) Client also invokes the function as a fallback
+                       │
+                       ▼
             Edge Function (send-confirmation-email)
-                    │
-                    ▼
+                       │
+                       ▼
+            Atomically claims the row (email_sent_at IS NULL -> now()).
+            Loses the race? Stop -- the email was already sent.
+                       │
+                       ▼
+            Re-reads the applicant from the database (service role),
+            escapes every value, renders the template
+                       │
+                       ▼
             Resend API dispatches email to candidate's Thapar email address
 ```
+
+Paths (2) and (3) both run on every submission, and the claim on `email_sent_at`
+guarantees **exactly one** email per registration. If delivery fails, the claim
+is released and `email_error` records why, so the next attempt can retry.
+
+The function accepts only a registration **id** — never a name or an email
+address — and loads the applicant's details from the database itself. A caller
+cannot choose the recipient or inject content into the message.
+
+> **Prerequisite:** run `supabase/registrations.sql` first. It creates the
+> `email_sent_at` and `email_error` columns this design depends on.
 
 ---
 
@@ -48,9 +69,15 @@ npx supabase secrets set RESEND_API_KEY=re_your_api_key_here
 npx supabase secrets set WHATSAPP_COMMUNITY_URL="https://chat.whatsapp.com/YOUR_COMMUNITY_LINK"
 npx supabase secrets set INSTAGRAM_URL="https://instagram.com/lead_tiet"
 
-# Deploy the function
-npx supabase functions deploy send-confirmation-email --no-verify-jwt
+# Deploy the function (JWT verification stays ON -- see the note below)
+npx supabase functions deploy send-confirmation-email
 ```
+
+> **Do not deploy with `--no-verify-jwt`.** That makes the function callable by
+> anyone who finds its URL, letting them burn your Resend quota. With JWT
+> verification on, the browser client authenticates with the anon key
+> automatically, and the database webhook is configured with an
+> `Authorization` header in Step 3.
 
 ### Option B: Using Supabase Dashboard Web Interface
 1. In your Supabase project dashboard, navigate to **Edge Functions**.
@@ -73,6 +100,8 @@ npx supabase functions deploy send-confirmation-email --no-verify-jwt
    - **Webhook Type**: Select `Supabase Edge Functions`.
    - **Edge Function**: Select `send-confirmation-email`.
    - **HTTP Method**: `POST`.
+   - **HTTP Headers**: add `Authorization` = `Bearer <your project's anon key>`
+     so the call passes JWT verification.
 3. Click **Save**.
 
 That's it! Every time a candidate submits the form, Supabase will automatically send the email in the background.
@@ -83,4 +112,24 @@ That's it! Every time a candidate submits the form, Supabase will automatically 
 
 You can change your WhatsApp and Instagram links in two places:
 1. **For the website UI**: In `src/config/community.js`
-2. **For the automated email**: Set the `WHATSAPP_COMMUNITY_URL` secret or edit `supabase/functions/send-confirmation-email/index.ts`.
+2. **For the automated email**: Set the `WHATSAPP_COMMUNITY_URL` secret.
+
+Both have a guard against shipping the placeholder link:
+
+- The Edge Function **refuses to send** (HTTP 500, logged) while
+  `WHATSAPP_COMMUNITY_URL` is unset or still contains
+  `YOUR_COMMUNITY_INVITE_CODE`. Nothing is claimed, so once you set the secret
+  the pending registrations can be retried.
+- The success screen **hides** the join button until
+  `whatsappCommunityUrl` in `src/config/community.js` is a real invite.
+
+---
+
+## Troubleshooting
+
+| Symptom | Where to look |
+|---|---|
+| No emails at all | Function logs. A config error names the missing secret. |
+| `email_error` is set on a row | The Resend response is recorded there verbatim. |
+| Want to re-send to one applicant | Set that row's `email_sent_at` back to `NULL`, then re-invoke the function with `{ "id": "<row id>" }`. |
+| Which applicants were mailed | `select email, email_sent_at, email_error from registrations;` |
