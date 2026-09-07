@@ -46,6 +46,31 @@ cannot choose the recipient or inject content into the message.
 
 ---
 
+## Quick start (scripted)
+
+Steps 2-4 below are automated. Do Step 1 by hand (it needs a browser), then:
+
+```bash
+./scripts/setup-email.sh
+```
+
+It prompts for your project ref, anon key, Resend key and WhatsApp invite,
+then links the project, sets the secrets, deploys the function, and writes a
+filled-in `supabase/webhook.generated.sql` for you to run in the SQL Editor.
+Re-running it is safe.
+
+Afterwards, check delivery any time:
+
+```bash
+./scripts/check-email.sh          # who has been mailed, and any errors
+./scripts/check-email.sh retry    # re-send everything still unsent
+```
+
+The rest of this guide explains what those steps do, and how to do them by
+hand if you would rather.
+
+---
+
 ## Step 1: Get Free Resend API Key (Takes 1 Minute)
 1. Go to [resend.com](https://resend.com) and create a free account (includes **3,000 free emails/month**, 100/day).
 2. Go to **API Keys** in the sidebar and click **Create API Key**.
