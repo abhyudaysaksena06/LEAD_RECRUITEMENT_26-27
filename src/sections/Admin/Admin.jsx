@@ -459,6 +459,7 @@ function Dashboard({ session }) {
           <table className="admin-table">
             <thead>
               <tr>
+                <th className="admin-table__num">#</th>
                 <th />
                 {COLUMNS.map((col) => (
                   <th key={col.key}>{col.label}</th>
@@ -466,12 +467,14 @@ function Dashboard({ session }) {
               </tr>
             </thead>
             <tbody>
-              {filtered.map((row) => (
+              {filtered.map((row, index) => (
                 <tr
                   key={row.id}
                   className={expanded === row.id ? 'is-expanded' : ''}
                   onClick={() => setExpanded(expanded === row.id ? null : row.id)}
                 >
+                  {/* Position in the current view, so it stays 1..n while filtering. */}
+                  <td className="admin-table__num">{index + 1}</td>
                   <td className="admin-table__actions">
                     {confirmingDelete === row.id ? (
                       <>

@@ -375,3 +375,11 @@ textarea.admin-input {
   display: flex;
   gap: 0.3rem;
 }
+
+.admin-table__num {
+  width: 2.5rem;
+  text-align: right;
+  font-family: var(--mono);
+  color: var(--admin-muted);
+  font-variant-numeric: tabular-nums;
+}
