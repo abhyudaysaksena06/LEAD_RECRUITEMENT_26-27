@@ -74,6 +74,14 @@ create policy "authenticated can read registrations"
   to authenticated
   using (true);
 
+-- Signed-in admins may correct an application from the /admin console.
+drop policy if exists "authenticated can update registrations" on public.registrations;
+create policy "authenticated can update registrations"
+  on public.registrations for update
+  to authenticated
+  using (true)
+  with check (true);
+
 -- Applicants must not be able to forge the email bookkeeping columns.
 revoke insert (email_sent_at, email_error) on public.registrations from anon, authenticated;
 
@@ -109,7 +117,7 @@ create index if not exists registrations_created_at_idx
 
 
 -- 4. Verify -----------------------------------------------------------------
--- Expect: 2 email columns, 2 policies, 2 check constraints, 3 indexes.
+-- Expect: 2 email columns, 3 policies, 2 check constraints, 3 indexes.
 
 select 'column' as kind, column_name as name from information_schema.columns
   where table_schema = 'public' and table_name = 'registrations'

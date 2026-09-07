@@ -2,6 +2,18 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { supabase } from '../../lib/supabase'
 import './Admin.css'
 
+// Mirrors the recruitment form's own choices, so an edit cannot produce a
+// value the database constraints would reject.
+const YEARS = ['1st Year', '2nd Year']
+const DEPARTMENTS = [
+  'Tech',
+  'Media & PR',
+  'Content',
+  'Design',
+  'Marketing',
+  'Event & Management',
+]
+
 const COLUMNS = [
   { key: 'created_at', label: 'Submitted' },
   { key: 'name', label: 'Name' },
@@ -19,6 +31,27 @@ const COLUMNS = [
   { key: 'experience', label: 'Experience' },
   { key: 'other_societies', label: 'Other Societies' },
   { key: 'anything_else', label: 'Anything Else' },
+]
+
+// Fields an admin may edit, and how each is rendered in the editor.
+// created_at, id and the email bookkeeping columns are deliberately absent:
+// they are records of what happened, not details to correct.
+const EDITABLE = [
+  { key: 'name', label: 'Full Name', type: 'text' },
+  { key: 'roll_no', label: 'Roll No.', type: 'text' },
+  { key: 'email', label: 'Email', type: 'text' },
+  { key: 'phone', label: 'Phone', type: 'text' },
+  { key: 'branch', label: 'Branch', type: 'text' },
+  { key: 'year', label: 'Year', type: 'select', options: YEARS },
+  { key: 'departments', label: 'Departments', type: 'departments' },
+  { key: 'why_lead', label: 'Why LEAD', type: 'textarea' },
+  { key: 'heard_from', label: 'Heard From', type: 'text' },
+  { key: 'linkedin', label: 'LinkedIn', type: 'text' },
+  { key: 'github', label: 'GitHub', type: 'text' },
+  { key: 'skills', label: 'Skills', type: 'textarea' },
+  { key: 'experience', label: 'Experience', type: 'textarea' },
+  { key: 'other_societies', label: 'Other Societies', type: 'textarea' },
+  { key: 'anything_else', label: 'Anything Else', type: 'textarea' },
 ]
 
 const cellText = (row, key) => {
@@ -95,12 +128,160 @@ function LoginPanel({ onSignedIn }) {
   )
 }
 
+/**
+ * Edit one application. Saves only the fields that actually changed, so two
+ * admins working on different fields of the same row do not clobber each other.
+ */
+function EditPanel({ row, onClose, onSaved }) {
+  const [draft, setDraft] = useState(row)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+
+  const setField = (key) => (e) =>
+    setDraft((prev) => ({ ...prev, [key]: e.target.value }))
+
+  const toggleDept = (dept) => () =>
+    setDraft((prev) => {
+      const current = prev.departments || []
+      return {
+        ...prev,
+        departments: current.includes(dept)
+          ? current.filter((d) => d !== dept)
+          : [...current, dept],
+      }
+    })
+
+  const handleSave = async (e) => {
+    e.preventDefault()
+    setError('')
+
+    const changes = {}
+    for (const field of EDITABLE) {
+      const before = row[field.key]
+      const after = draft[field.key]
+      const differs = Array.isArray(after)
+        ? JSON.stringify(after) !== JSON.stringify(before || [])
+        : after !== before
+      if (differs) changes[field.key] = after
+    }
+
+    if (Object.keys(changes).length === 0) {
+      onClose()
+      return
+    }
+
+    if ((draft.departments || []).length === 0) {
+      setError('At least one department is required.')
+      return
+    }
+
+    setSaving(true)
+    const { data, error: updateError } = await supabase
+      .from('registrations')
+      .update(changes)
+      .eq('id', row.id)
+      .select()
+      .single()
+    setSaving(false)
+
+    if (updateError) {
+      setError(updateError.message || 'Could not save the changes.')
+      return
+    }
+    onSaved(data)
+  }
+
+  return (
+    <div className="admin-modal" role="dialog" aria-modal="true">
+      <div className="admin-modal__backdrop" onClick={onClose} />
+      <form className="admin-modal__panel" onSubmit={handleSave}>
+        <header className="admin-modal__head">
+          <div>
+            <p className="admin-kicker">Editing application</p>
+            <h2 className="admin-modal__title">{row.name}</h2>
+            <p className="admin-dash__meta">
+              Submitted {new Date(row.created_at).toLocaleString()}
+            </p>
+          </div>
+          <button type="button" className="admin-btn admin-btn--ghost" onClick={onClose}>
+            Close
+          </button>
+        </header>
+
+        <div className="admin-modal__body">
+          {EDITABLE.map((field) => (
+            <div className="admin-field" key={field.key}>
+              <label className="admin-label" htmlFor={`edit-${field.key}`}>
+                {field.label}
+              </label>
+
+              {field.type === 'textarea' ? (
+                <textarea
+                  id={`edit-${field.key}`}
+                  className="admin-input"
+                  rows={3}
+                  value={draft[field.key] || ''}
+                  onChange={setField(field.key)}
+                />
+              ) : field.type === 'select' ? (
+                <select
+                  id={`edit-${field.key}`}
+                  className="admin-input"
+                  value={draft[field.key] || ''}
+                  onChange={setField(field.key)}
+                >
+                  {field.options.map((option) => (
+                    <option key={option} value={option}>{option}</option>
+                  ))}
+                </select>
+              ) : field.type === 'departments' ? (
+                <div className="admin-chips">
+                  {DEPARTMENTS.map((dept) => (
+                    <button
+                      type="button"
+                      key={dept}
+                      className={`admin-chip ${(draft.departments || []).includes(dept) ? 'is-active' : ''}`}
+                      onClick={toggleDept(dept)}
+                    >
+                      {dept}
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <input
+                  id={`edit-${field.key}`}
+                  className="admin-input"
+                  type="text"
+                  value={draft[field.key] || ''}
+                  onChange={setField(field.key)}
+                />
+              )}
+            </div>
+          ))}
+        </div>
+
+        {error && <p className="admin-error">{error}</p>}
+
+        <footer className="admin-modal__foot">
+          <button className="admin-btn admin-btn--primary" type="submit" disabled={saving}>
+            {saving ? 'Saving…' : 'Save Changes'}
+          </button>
+          <button type="button" className="admin-btn" onClick={onClose}>
+            Cancel
+          </button>
+        </footer>
+      </form>
+    </div>
+  )
+}
+
 function Dashboard({ session }) {
   const [rows, setRows] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [query, setQuery] = useState('')
   const [expanded, setExpanded] = useState(null)
+  const [editing, setEditing] = useState(null)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -204,6 +385,7 @@ function Dashboard({ session }) {
           <table className="admin-table">
             <thead>
               <tr>
+                <th />
                 {COLUMNS.map((col) => (
                   <th key={col.key}>{col.label}</th>
                 ))}
@@ -216,6 +398,18 @@ function Dashboard({ session }) {
                   className={expanded === row.id ? 'is-expanded' : ''}
                   onClick={() => setExpanded(expanded === row.id ? null : row.id)}
                 >
+                  <td className="admin-table__actions">
+                    <button
+                      type="button"
+                      className="admin-btn admin-btn--tiny"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setEditing(row)
+                      }}
+                    >
+                      Edit
+                    </button>
+                  </td>
                   {COLUMNS.map((col) => (
                     <td key={col.key} title={cellText(row, col.key)}>
                       {cellText(row, col.key)}
@@ -228,7 +422,20 @@ function Dashboard({ session }) {
         </div>
       )}
 
-      <p className="admin-foot">Click a row to expand its full text.</p>
+      <p className="admin-foot">
+        Click a row to expand its full text, or Edit to change an application.
+      </p>
+
+      {editing && (
+        <EditPanel
+          row={editing}
+          onClose={() => setEditing(null)}
+          onSaved={(updated) => {
+            setRows((prev) => prev.map((r) => (r.id === updated.id ? updated : r)))
+            setEditing(null)
+          }}
+        />
+      )}
     </div>
   )
 }
