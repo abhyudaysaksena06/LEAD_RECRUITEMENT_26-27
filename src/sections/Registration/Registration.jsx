@@ -66,7 +66,7 @@ export default function Registration() {
 
     setSubmitting(true)
 
-    const { data: inserted, error: insertError } = await supabase
+    const { error: insertError } = await supabase
       .from('registrations')
       .insert({
         name: form.name,
@@ -85,27 +85,12 @@ export default function Registration() {
         other_societies: form.otherSocieties,
         anything_else: form.anythingElse,
       })
-      .select('id')
-      .single()
 
     setSubmitting(false)
 
     if (insertError) {
       setError(insertError.message || 'Something went wrong. Please try again.')
       return
-    }
-
-    // Fallback trigger for the confirmation email, in case the Supabase
-    // Database Webhook is not configured or is delayed. The function claims
-    // each registration atomically, so this never sends a second email.
-    // Deliberately not awaited: the success screen should not wait on mail.
-    if (inserted?.id) {
-      supabase.functions
-        .invoke('send-confirmation-email', { body: { id: inserted.id } })
-        .catch((err) => {
-          // Delivery is the webhook's job; log and move on.
-          console.error('Confirmation email fallback failed:', err)
-        })
     }
 
     setSubmitted(true)
