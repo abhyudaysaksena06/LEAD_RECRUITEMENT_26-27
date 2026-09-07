@@ -57,11 +57,14 @@ alter table public.registrations add column if not exists email_error text;
 -- below. Without this the anon key would expose every application publicly.
 alter table public.registrations enable row level security;
 
--- Applicants (anonymous) may submit, and may never read anything back.
+-- Applicants may submit, and may never read anything back. This covers
+-- 'authenticated' as well as 'anon' so that an admin who is signed in at
+-- /admin in the same browser can still submit the form -- their session is
+-- 'authenticated', and an anon-only policy would reject their application.
 drop policy if exists "anon can insert registrations" on public.registrations;
 create policy "anon can insert registrations"
   on public.registrations for insert
-  to anon
+  to anon, authenticated
   with check (true);
 
 -- Signed-in admins may read every application. This is what /admin needs.
@@ -72,7 +75,7 @@ create policy "authenticated can read registrations"
   using (true);
 
 -- Applicants must not be able to forge the email bookkeeping columns.
-revoke insert (email_sent_at, email_error) on public.registrations from anon;
+revoke insert (email_sent_at, email_error) on public.registrations from anon, authenticated;
 
 
 -- 3. Data integrity ---------------------------------------------------------
