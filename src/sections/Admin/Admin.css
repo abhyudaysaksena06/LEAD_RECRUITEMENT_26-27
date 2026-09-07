@@ -348,3 +348,25 @@ textarea.admin-input {
 .admin-table__actions {
   white-space: nowrap;
 }
+
+.admin-modal__spacer {
+  flex: 1;
+}
+
+.admin-modal__warn {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--admin-danger);
+  align-self: center;
+}
+
+.admin-btn--danger {
+  color: var(--admin-danger);
+  border-color: rgba(190, 30, 30, 0.5);
+}
+
+.admin-btn--danger:hover:not(:disabled) {
+  color: #fff;
+  background: var(--admin-danger);
+  border-color: var(--admin-danger);
+}

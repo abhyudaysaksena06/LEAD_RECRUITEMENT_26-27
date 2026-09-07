@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import './Registration.css'
 import { supabase } from '../../lib/supabase'
 import { COMMUNITY_LINKS, HAS_WHATSAPP_COMMUNITY_URL } from '../../config/community'
@@ -14,28 +14,64 @@ const DEPARTMENTS = [
 
 const YEARS = ['1st Year', '2nd Year']
 
+const EMPTY_FORM = {
+  name: '',
+  rollNo: '',
+  email: '',
+  phone: '',
+  branch: '',
+  year: '1st Year',
+  departments: [],
+  whyLead: '',
+  heardFrom: '',
+  linkedin: '',
+  github: '',
+  skills: '',
+  experience: '',
+  otherSocieties: '',
+  anythingElse: '',
+}
+
+// A half-filled application survives a refresh, an accidental back button, or a
+// browser crash. The draft lives only in this browser and is cleared on submit.
+const DRAFT_KEY = 'lead-recruitment-draft'
+
+const loadDraft = () => {
+  try {
+    const saved = localStorage.getItem(DRAFT_KEY)
+    if (!saved) return EMPTY_FORM
+    // Spread over EMPTY_FORM so a draft saved by an older version of the form
+    // cannot leave a field undefined and turn its input uncontrolled.
+    return { ...EMPTY_FORM, ...JSON.parse(saved) }
+  } catch {
+    // Private browsing, blocked storage, or corrupt JSON: start clean.
+    return EMPTY_FORM
+  }
+}
+
 export default function Registration() {
-  const [form, setForm] = useState({
-    name: '',
-    rollNo: '',
-    email: '',
-    phone: '',
-    branch: '',
-    year: '1st Year',
-    departments: [],
-    whyLead: '',
-    heardFrom: '',
-    linkedin: '',
-    github: '',
-    skills: '',
-    experience: '',
-    otherSocieties: '',
-    anythingElse: '',
-  })
+  const [form, setForm] = useState(loadDraft)
 
   const [submitted, setSubmitted] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
+
+  useEffect(() => {
+    if (submitted) return
+    try {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(form))
+    } catch {
+      // Storage unavailable or full; the form still works, just without a draft.
+    }
+  }, [form, submitted])
+
+  const clearDraft = () => {
+    try {
+      localStorage.removeItem(DRAFT_KEY)
+    } catch {
+      // Nothing to do: the draft is per-browser and harmless if it lingers.
+    }
+  }
 
   const set = (field) => (e) =>
     setForm((prev) => ({ ...prev, [field]: e.target.value }))
@@ -93,6 +129,7 @@ export default function Registration() {
       return
     }
 
+    clearDraft()
     setSubmitted(true)
   }
 
@@ -170,23 +207,8 @@ export default function Registration() {
               type="button"
               className="reg-success__reset-btn"
               onClick={() => {
-                setForm({
-                  name: '',
-                  rollNo: '',
-                  email: '',
-                  phone: '',
-                  branch: '',
-                  year: '1st Year',
-                  departments: [],
-                  whyLead: '',
-                  heardFrom: '',
-                  linkedin: '',
-                  github: '',
-                  skills: '',
-                  experience: '',
-                  otherSocieties: '',
-                  anythingElse: '',
-                })
+                clearDraft()
+                setForm(EMPTY_FORM)
                 setSubmitted(false)
               }}
             >

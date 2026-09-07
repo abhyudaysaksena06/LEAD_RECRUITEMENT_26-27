@@ -132,10 +132,12 @@ function LoginPanel({ onSignedIn }) {
  * Edit one application. Saves only the fields that actually changed, so two
  * admins working on different fields of the same row do not clobber each other.
  */
-function EditPanel({ row, onClose, onSaved }) {
+function EditPanel({ row, onClose, onSaved, onDeleted }) {
   const [draft, setDraft] = useState(row)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  // Deleting is irreversible, so it takes two clicks rather than one.
+  const [confirmingDelete, setConfirmingDelete] = useState(false)
 
   const setField = (key) => (e) =>
     setDraft((prev) => ({ ...prev, [key]: e.target.value }))
@@ -189,6 +191,25 @@ function EditPanel({ row, onClose, onSaved }) {
       return
     }
     onSaved(data)
+  }
+
+  const handleDelete = async () => {
+    setError('')
+    setSaving(true)
+
+    const { error: deleteError } = await supabase
+      .from('registrations')
+      .delete()
+      .eq('id', row.id)
+
+    setSaving(false)
+
+    if (deleteError) {
+      setError(deleteError.message || 'Could not delete this application.')
+      setConfirmingDelete(false)
+      return
+    }
+    onDeleted(row.id)
   }
 
   return (
@@ -269,6 +290,37 @@ function EditPanel({ row, onClose, onSaved }) {
           <button type="button" className="admin-btn" onClick={onClose}>
             Cancel
           </button>
+
+          <span className="admin-modal__spacer" />
+
+          {confirmingDelete ? (
+            <>
+              <span className="admin-modal__warn">Delete permanently?</span>
+              <button
+                type="button"
+                className="admin-btn admin-btn--danger"
+                onClick={handleDelete}
+                disabled={saving}
+              >
+                {saving ? 'Deleting…' : 'Yes, delete'}
+              </button>
+              <button
+                type="button"
+                className="admin-btn"
+                onClick={() => setConfirmingDelete(false)}
+              >
+                Keep
+              </button>
+            </>
+          ) : (
+            <button
+              type="button"
+              className="admin-btn admin-btn--ghost admin-btn--danger"
+              onClick={() => setConfirmingDelete(true)}
+            >
+              Delete
+            </button>
+          )}
         </footer>
       </form>
     </div>
@@ -432,6 +484,10 @@ function Dashboard({ session }) {
           onClose={() => setEditing(null)}
           onSaved={(updated) => {
             setRows((prev) => prev.map((r) => (r.id === updated.id ? updated : r)))
+            setEditing(null)
+          }}
+          onDeleted={(id) => {
+            setRows((prev) => prev.filter((r) => r.id !== id))
             setEditing(null)
           }}
         />
