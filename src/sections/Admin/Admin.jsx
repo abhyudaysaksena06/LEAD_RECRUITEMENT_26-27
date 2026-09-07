@@ -334,6 +334,9 @@ function Dashboard({ session }) {
   const [query, setQuery] = useState('')
   const [expanded, setExpanded] = useState(null)
   const [editing, setEditing] = useState(null)
+  // Row id awaiting delete confirmation, so a stray click cannot destroy data.
+  const [confirmingDelete, setConfirmingDelete] = useState(null)
+  const [deleting, setDeleting] = useState(false)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -367,6 +370,25 @@ function Dashboard({ session }) {
       COLUMNS.some((col) => cellText(row, col.key).toLowerCase().includes(q))
     )
   }, [rows, query])
+
+  const deleteRow = async (id) => {
+    setError('')
+    setDeleting(true)
+
+    const { error: deleteError } = await supabase
+      .from('registrations')
+      .delete()
+      .eq('id', id)
+
+    setDeleting(false)
+    setConfirmingDelete(null)
+
+    if (deleteError) {
+      setError(deleteError.message || 'Could not delete this application.')
+      return
+    }
+    setRows((prev) => prev.filter((r) => r.id !== id))
+  }
 
   const exportCsv = () => {
     const escape = (value) => '"' + value.replace(/"/g, '""') + '"'
@@ -451,16 +473,54 @@ function Dashboard({ session }) {
                   onClick={() => setExpanded(expanded === row.id ? null : row.id)}
                 >
                   <td className="admin-table__actions">
-                    <button
-                      type="button"
-                      className="admin-btn admin-btn--tiny"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        setEditing(row)
-                      }}
-                    >
-                      Edit
-                    </button>
+                    {confirmingDelete === row.id ? (
+                      <>
+                        <button
+                          type="button"
+                          className="admin-btn admin-btn--tiny admin-btn--danger"
+                          disabled={deleting}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            deleteRow(row.id)
+                          }}
+                        >
+                          {deleting ? 'Deleting…' : 'Confirm'}
+                        </button>
+                        <button
+                          type="button"
+                          className="admin-btn admin-btn--tiny"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setConfirmingDelete(null)
+                          }}
+                        >
+                          Keep
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          type="button"
+                          className="admin-btn admin-btn--tiny"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setEditing(row)
+                          }}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          type="button"
+                          className="admin-btn admin-btn--tiny admin-btn--danger"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setConfirmingDelete(row.id)
+                          }}
+                        >
+                          Delete
+                        </button>
+                      </>
+                    )}
                   </td>
                   {COLUMNS.map((col) => (
                     <td key={col.key} title={cellText(row, col.key)}>

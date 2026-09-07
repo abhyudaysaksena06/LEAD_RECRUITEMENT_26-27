@@ -370,3 +370,8 @@ textarea.admin-input {
   background: var(--admin-danger);
   border-color: var(--admin-danger);
 }
+
+.admin-table__actions {
+  display: flex;
+  gap: 0.3rem;
+}
