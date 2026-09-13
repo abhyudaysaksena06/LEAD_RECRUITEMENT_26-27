@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import './Registration.css'
 import { supabase } from '../../lib/supabase'
 import { COMMUNITY_LINKS, HAS_WHATSAPP_COMMUNITY_URL } from '../../config/community'
+import { fetchFormStatus, DEFAULT_CLOSED_MESSAGE } from '../../lib/settings'
 
 const DEPARTMENTS = [
   'Tech',
@@ -56,6 +57,26 @@ export default function Registration() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
 
+  // Whether recruitment is accepting applications, as set from /admin.
+  // Assume open until the check comes back, then correct — the database
+  // refuses inserts while closed, so an optimistic render cannot let one through.
+  const [formsOpen, setFormsOpen] = useState(true)
+  const [closedMessage, setClosedMessage] = useState(DEFAULT_CLOSED_MESSAGE)
+  const [checkingStatus, setCheckingStatus] = useState(true)
+
+  useEffect(() => {
+    let active = true
+    fetchFormStatus().then((status) => {
+      if (!active) return
+      setFormsOpen(status.formsOpen)
+      setClosedMessage(status.closedMessage)
+      setCheckingStatus(false)
+    })
+    return () => {
+      active = false
+    }
+  }, [])
+
   useEffect(() => {
     if (submitted) return
     try {
@@ -91,6 +112,15 @@ export default function Registration() {
     e.preventDefault()
     setError('')
 
+    // Re-check at the moment of submitting: the form may have been open when
+    // this page was loaded and closed while it was being filled in.
+    const status = await fetchFormStatus()
+    if (!status.formsOpen) {
+      setFormsOpen(false)
+      setClosedMessage(status.closedMessage)
+      return
+    }
+
     if (!form.year) {
       setError('Please select your year of study.')
       return
@@ -125,6 +155,12 @@ export default function Registration() {
     setSubmitting(false)
 
     if (insertError) {
+      // 42501 is the row-level-security refusal: recruitment closed between the
+      // check above and this insert. Show the closed notice, not a raw error.
+      if (insertError.code === '42501') {
+        setFormsOpen(false)
+        return
+      }
       setError(insertError.message || 'Something went wrong. Please try again.')
       return
     }
@@ -153,7 +189,45 @@ export default function Registration() {
         <span className="reg-pin reg-pin--left" />
         <span className="reg-pin reg-pin--right" />
 
-        {submitted ? (
+        {checkingStatus && !submitted ? (
+          <p className="reg-status-check">Checking whether applications are open…</p>
+        ) : !formsOpen && !submitted ? (
+          <div className="reg-closed">
+            <div className="reg-closed__badge">
+              <span className="reg-closed__icon">✕</span>
+            </div>
+            <h2 className="reg-closed__title">Applications Are Closed</h2>
+            <p className="reg-closed__message">{closedMessage}</p>
+
+            <div className="reg-closed__links">
+              <a
+                className="reg-btn reg-btn--outline"
+                href={COMMUNITY_LINKS.contactUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Have a doubt? Contact us
+              </a>
+              <a
+                className="reg-btn reg-btn--outline"
+                href={COMMUNITY_LINKS.websiteUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Know more about {COMMUNITY_LINKS.societyName}
+              </a>
+            </div>
+
+            <p className="reg-closed__note">
+              For any queries write to{' '}
+              <a href={`mailto:${COMMUNITY_LINKS.contactEmail}`}>{COMMUNITY_LINKS.contactEmail}</a>{' '}
+              or reach us on Instagram at{' '}
+              <a href={COMMUNITY_LINKS.instagramUrl} target="_blank" rel="noopener noreferrer">
+                {COMMUNITY_LINKS.instagramHandle}
+              </a>.
+            </p>
+          </div>
+        ) : submitted ? (
           <div className="reg-success">
             <div className="reg-success__badge">
               <span className="reg-success__icon">✓</span>

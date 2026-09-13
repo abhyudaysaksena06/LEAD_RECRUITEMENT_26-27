@@ -13,6 +13,10 @@ export const COMMUNITY_LINKS = {
   // Official society contact email
   contactEmail: 'lead_sc@thapar.edu',
 
+  // Official website, and the page to send questions to.
+  websiteUrl: 'https://leadtiet.in/',
+  contactUrl: 'https://leadtiet.in/contact',
+
   // Society branding
   societyName: 'LEAD Society',
   institution: 'Thapar Institute of Engineering & Technology (TIET), Patiala',

@@ -79,6 +79,25 @@ way in.
 
 ---
 
+## Part 3b — Closing recruitment when you are done
+
+The admin console has a **Recruitment form** panel at the top:
+
+- **Close Forms** (two clicks, on purpose) stops new applications. Visitors to
+  the public form then see an "Applications Are Closed" notice with links to
+  <https://leadtiet.in/contact> for doubts and <https://leadtiet.in/> for more
+  about the society.
+- **Reopen Forms** puts it back.
+- The text in that panel is the message applicants see; edit it and press
+  **Save Message**.
+
+Closing is enforced by the database, not just the page: the insert policy in
+`schema.sql` checks the same switch, so once the form is closed nothing can be
+submitted even by posting straight to the API. If you set the project up
+before this existed, re-run `supabase/schema.sql` — it is safe to run again.
+
+---
+
 ## Part 4 — Set up the confirmation email
 
 Applicants get an email with your WhatsApp community and Instagram links. The

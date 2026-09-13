@@ -62,8 +62,9 @@ but cannot submit.
 src/
   sections/Registration/   the form
   sections/Admin/          the admin console
-  config/community.js      WhatsApp / Instagram links  ← edit before launch
+  config/community.js      WhatsApp / Instagram / website links  ← edit before launch
   lib/supabase.js          shared Supabase client
+  lib/settings.js          reads and flips the open/closed recruitment switch
 supabase/
   schema.sql               the whole database, one paste, nothing to fill in
   functions/send-confirmation-email/

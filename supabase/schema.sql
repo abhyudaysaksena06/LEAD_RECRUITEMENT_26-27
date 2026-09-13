@@ -51,6 +51,52 @@ alter table public.registrations add column if not exists email_sent_at timestam
 alter table public.registrations add column if not exists email_error text;
 
 
+-- 1b. Recruitment switch ----------------------------------------------------
+-- A single-row settings table holding whether the recruitment form accepts
+-- applications. Admins flip it from /admin; applicants see a closed notice.
+
+create table if not exists public.app_settings (
+  id boolean primary key default true,
+  forms_open boolean not null default true,
+  closed_message text,
+  updated_at timestamptz not null default now(),
+  -- Keeps the table to exactly one row, so there is a single source of truth.
+  constraint app_settings_singleton check (id)
+);
+
+insert into public.app_settings (id, forms_open)
+  values (true, true)
+  on conflict (id) do nothing;
+
+alter table public.app_settings enable row level security;
+
+-- Everyone may read the switch: the public form has to know whether to render.
+drop policy if exists "anyone can read app settings" on public.app_settings;
+create policy "anyone can read app settings"
+  on public.app_settings for select
+  to anon, authenticated
+  using (true);
+
+-- Only signed-in admins may flip it.
+drop policy if exists "authenticated can update app settings" on public.app_settings;
+create policy "authenticated can update app settings"
+  on public.app_settings for update
+  to authenticated
+  using (true)
+  with check (true);
+
+-- Read the switch from inside a policy without granting extra table access.
+create or replace function public.forms_are_open()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select coalesce((select forms_open from public.app_settings where id), true);
+$$;
+
+
 -- 2. Access control ---------------------------------------------------------
 
 -- With RLS on, the table is invisible to everyone except through the policies
@@ -62,10 +108,13 @@ alter table public.registrations enable row level security;
 -- /admin in the same browser can still submit the form -- their session is
 -- 'authenticated', and an anon-only policy would reject their application.
 drop policy if exists "anon can insert registrations" on public.registrations;
+-- The with-check clause is what actually closes recruitment: once an admin
+-- flips the switch off, the database itself refuses new applications, so the
+-- form cannot be bypassed by posting straight to the API.
 create policy "anon can insert registrations"
   on public.registrations for insert
   to anon, authenticated
-  with check (true);
+  with check (public.forms_are_open());
 
 -- Signed-in admins may read every application. This is what /admin needs.
 drop policy if exists "authenticated can read registrations" on public.registrations;
