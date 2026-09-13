@@ -765,3 +765,9 @@
     transform: none;
   }
 }
+
+/* With no title beneath it, the file label carries the whole header. */
+.reg-subtitle--closed {
+  margin-bottom: 0;
+  text-align: center;
+}

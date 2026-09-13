@@ -172,21 +172,25 @@ export default function Registration() {
   return (
     <div className="reg-page">
       {/* ===== Header ===== */}
+      {/* Once recruitment is closed there is nothing to be ready for, so the
+          invitation disappears and only a quiet file label is left above the
+          notice. */}
       <header className="reg-header">
-        <p className="reg-subtitle">Recruitment Form // LEAD 2026</p>
-        <h1 className="reg-title">
-          Ready to <span className="reg-title__accent">LEAD</span>?
-        </h1>
         {formsOpen ? (
-          <p className="reg-desc">
-            One application per candidate. Fill in your details honestly — this
-            helps us understand you better and find the right fit within the
-            society. Fields marked with <span style={{ color: '#be1e1e' }}>*</span> are required.
-          </p>
+          <>
+            <p className="reg-subtitle">Recruitment Form // LEAD 2026</p>
+            <h1 className="reg-title">
+              Ready to <span className="reg-title__accent">LEAD</span>?
+            </h1>
+            <p className="reg-desc">
+              One application per candidate. Fill in your details honestly — this
+              helps us understand you better and find the right fit within the
+              society. Fields marked with <span style={{ color: '#be1e1e' }}>*</span> are required.
+            </p>
+          </>
         ) : (
-          <p className="reg-desc">
-            Recruitment for the 2026—27 session has ended. The links below will
-            still reach us.
+          <p className="reg-subtitle reg-subtitle--closed">
+            LEAD Society // Recruitment 2026—27
           </p>
         )}
       </header>
