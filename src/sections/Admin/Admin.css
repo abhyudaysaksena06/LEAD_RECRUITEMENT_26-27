@@ -448,3 +448,10 @@ textarea.admin-input {
   font-size: 0.82rem;
   color: #6fdca0;
 }
+
+.admin-status__quote {
+  font-style: italic;
+  line-height: 1.6;
+  margin: 0 0 0.6rem;
+  opacity: 0.85;
+}

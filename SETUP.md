@@ -81,20 +81,21 @@ way in.
 
 ## Part 3b — Closing recruitment when you are done
 
-The admin console has a **Recruitment form** panel at the top:
+Recruitment is opened and closed from the frontend, with no database involved:
 
-- **Close Forms** (two clicks, on purpose) stops new applications. Visitors to
-  the public form then see an "Applications Are Closed" notice with links to
-  <https://leadtiet.in/contact> for doubts and <https://leadtiet.in/> for more
-  about the society.
-- **Reopen Forms** puts it back.
-- The text in that panel is the message applicants see; edit it and press
-  **Save Message**.
+```js
+// src/lib/settings.js
+export const FORMS_OPEN = false
+```
 
-Closing is enforced by the database, not just the page: the insert policy in
-`schema.sql` checks the same switch, so once the form is closed nothing can be
-submitted even by posting straight to the API. If you set the project up
-before this existed, re-run `supabase/schema.sql` — it is safe to run again.
+While it is `false` the public form is not rendered at all — there is nothing
+to fill in and nothing to submit. Visitors see an "Applications Are Closed"
+notice with links to <https://leadtiet.in/contact> for doubts and
+<https://leadtiet.in/> for more about the society. Edit `CLOSED_MESSAGE` in
+the same file to change the wording.
+
+Set it back to `true` and redeploy to reopen. The admin console shows the
+current state at the top of the page.
 
 ---
 

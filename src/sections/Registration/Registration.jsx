@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import './Registration.css'
 import { supabase } from '../../lib/supabase'
 import { COMMUNITY_LINKS, HAS_WHATSAPP_COMMUNITY_URL } from '../../config/community'
-import { fetchFormStatus, DEFAULT_CLOSED_MESSAGE } from '../../lib/settings'
+import { FORMS_OPEN, CLOSED_MESSAGE } from '../../lib/settings'
 
 const DEPARTMENTS = [
   'Tech',
@@ -57,26 +57,6 @@ export default function Registration() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
 
-  // Whether recruitment is accepting applications, as set from /admin.
-  // Assume open until the check comes back, then correct — the database
-  // refuses inserts while closed, so an optimistic render cannot let one through.
-  const [formsOpen, setFormsOpen] = useState(true)
-  const [closedMessage, setClosedMessage] = useState(DEFAULT_CLOSED_MESSAGE)
-  const [checkingStatus, setCheckingStatus] = useState(true)
-
-  useEffect(() => {
-    let active = true
-    fetchFormStatus().then((status) => {
-      if (!active) return
-      setFormsOpen(status.formsOpen)
-      setClosedMessage(status.closedMessage)
-      setCheckingStatus(false)
-    })
-    return () => {
-      active = false
-    }
-  }, [])
-
   useEffect(() => {
     if (submitted) return
     try {
@@ -112,15 +92,6 @@ export default function Registration() {
     e.preventDefault()
     setError('')
 
-    // Re-check at the moment of submitting: the form may have been open when
-    // this page was loaded and closed while it was being filled in.
-    const status = await fetchFormStatus()
-    if (!status.formsOpen) {
-      setFormsOpen(false)
-      setClosedMessage(status.closedMessage)
-      return
-    }
-
     if (!form.year) {
       setError('Please select your year of study.')
       return
@@ -155,12 +126,6 @@ export default function Registration() {
     setSubmitting(false)
 
     if (insertError) {
-      // 42501 is the row-level-security refusal: recruitment closed between the
-      // check above and this insert. Show the closed notice, not a raw error.
-      if (insertError.code === '42501') {
-        setFormsOpen(false)
-        return
-      }
       setError(insertError.message || 'Something went wrong. Please try again.')
       return
     }
@@ -177,11 +142,17 @@ export default function Registration() {
         <h1 className="reg-title">
           Ready to <span className="reg-title__accent">LEAD</span>?
         </h1>
-        <p className="reg-desc">
-          One application per candidate. Fill in your details honestly — this
-          helps us understand you better and find the right fit within the
-          society. Fields marked with <span style={{ color: '#be1e1e' }}>*</span> are required.
-        </p>
+        {FORMS_OPEN ? (
+          <p className="reg-desc">
+            One application per candidate. Fill in your details honestly — this
+            helps us understand you better and find the right fit within the
+            society. Fields marked with <span style={{ color: '#be1e1e' }}>*</span> are required.
+          </p>
+        ) : (
+          <p className="reg-desc">
+            Recruitment for the 2026-27 session has ended.
+          </p>
+        )}
       </header>
 
       {/* ===== Parchment card ===== */}
@@ -189,15 +160,13 @@ export default function Registration() {
         <span className="reg-pin reg-pin--left" />
         <span className="reg-pin reg-pin--right" />
 
-        {checkingStatus && !submitted ? (
-          <p className="reg-status-check">Checking whether applications are open…</p>
-        ) : !formsOpen && !submitted ? (
+        {!FORMS_OPEN && !submitted ? (
           <div className="reg-closed">
             <div className="reg-closed__badge">
               <span className="reg-closed__icon">✕</span>
             </div>
             <h2 className="reg-closed__title">Applications Are Closed</h2>
-            <p className="reg-closed__message">{closedMessage}</p>
+            <p className="reg-closed__message">{CLOSED_MESSAGE}</p>
 
             <div className="reg-closed__links">
               <a
