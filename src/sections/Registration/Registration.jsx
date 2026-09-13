@@ -177,11 +177,18 @@ export default function Registration() {
         <h1 className="reg-title">
           Ready to <span className="reg-title__accent">LEAD</span>?
         </h1>
-        <p className="reg-desc">
-          One application per candidate. Fill in your details honestly — this
-          helps us understand you better and find the right fit within the
-          society. Fields marked with <span style={{ color: '#be1e1e' }}>*</span> are required.
-        </p>
+        {formsOpen ? (
+          <p className="reg-desc">
+            One application per candidate. Fill in your details honestly — this
+            helps us understand you better and find the right fit within the
+            society. Fields marked with <span style={{ color: '#be1e1e' }}>*</span> are required.
+          </p>
+        ) : (
+          <p className="reg-desc">
+            Recruitment for the 2026—27 session has ended. The links below will
+            still reach us.
+          </p>
+        )}
       </header>
 
       {/* ===== Parchment card ===== */}
@@ -193,38 +200,62 @@ export default function Registration() {
           <p className="reg-status-check">Checking whether applications are open…</p>
         ) : !formsOpen && !submitted ? (
           <div className="reg-closed">
-            <div className="reg-closed__badge">
-              <span className="reg-closed__icon">✕</span>
+            {/* A rubber stamp across the file, not a status icon — it belongs to
+                the same dossier the form itself is styled as. */}
+            <div className="reg-stamp" aria-hidden="true">
+              <span className="reg-stamp__edge">★ LEAD SOCIETY · TIET ★</span>
+              <span className="reg-stamp__main">Closed</span>
+              <span className="reg-stamp__sub">Intake 2026—27</span>
             </div>
+
+            <p className="reg-closed__kicker">File Sealed // No Further Entries</p>
             <h2 className="reg-closed__title">Applications Are Closed</h2>
+
             <p className="reg-closed__message">{closedMessage}</p>
+
+            <div className="reg-closed__rule">
+              <span className="reg-closed__rule-line" />
+              <span className="reg-closed__rule-mark">✦</span>
+              <span className="reg-closed__rule-line" />
+            </div>
 
             <div className="reg-closed__links">
               <a
-                className="reg-btn reg-btn--outline"
+                className="reg-doorway"
                 href={COMMUNITY_LINKS.contactUrl}
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Have a doubt? Contact us
+                <span className="reg-doorway__num">01</span>
+                <span className="reg-doorway__text">
+                  <span className="reg-doorway__label">Still have a doubt?</span>
+                  <span className="reg-doorway__value">Contact us</span>
+                </span>
+                <span className="reg-doorway__arrow">→</span>
               </a>
+
               <a
-                className="reg-btn reg-btn--outline"
+                className="reg-doorway"
                 href={COMMUNITY_LINKS.websiteUrl}
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Know more about {COMMUNITY_LINKS.societyName}
+                <span className="reg-doorway__num">02</span>
+                <span className="reg-doorway__text">
+                  <span className="reg-doorway__label">New here?</span>
+                  <span className="reg-doorway__value">About the society</span>
+                </span>
+                <span className="reg-doorway__arrow">→</span>
               </a>
             </div>
 
             <p className="reg-closed__note">
-              For any queries write to{' '}
+              Written queries to{' '}
               <a href={`mailto:${COMMUNITY_LINKS.contactEmail}`}>{COMMUNITY_LINKS.contactEmail}</a>{' '}
-              or reach us on Instagram at{' '}
+              · Updates on{' '}
               <a href={COMMUNITY_LINKS.instagramUrl} target="_blank" rel="noopener noreferrer">
                 {COMMUNITY_LINKS.instagramHandle}
-              </a>.
+              </a>
             </p>
           </div>
         ) : submitted ? (

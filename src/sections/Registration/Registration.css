@@ -544,95 +544,224 @@
   cursor: not-allowed;
 }
 
-/* ===== Recruitment closed notice ===================================== */
+/* ===== Recruitment closed notice ===================================
+   Same dossier the form lives in: a rubber stamp on aged paper, a typed
+   note, and two filed-away doorways out. No generic status icon.
+   ================================================================== */
 
 .reg-status-check {
   text-align: center;
-  padding: 3rem 1.5rem;
+  padding: 4rem 1.5rem;
   font-family: var(--mono);
-  font-size: 0.82rem;
-  letter-spacing: 0.06em;
+  font-size: 0.72rem;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: var(--ink-muted);
+  color: rgba(61, 52, 40, 0.55);
 }
 
 .reg-closed {
+  position: relative;
   text-align: center;
-  padding: 3rem 1.5rem 2.25rem;
-  max-width: 36rem;
+  padding: 1.5rem 1rem 1rem;
+  max-width: 38rem;
   margin: 0 auto;
 }
 
-.reg-closed__badge {
+/* --- The stamp --- */
+.reg-stamp {
   display: inline-flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background: #be1e1e;
-  color: var(--paper);
-  margin-bottom: 1.25rem;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  gap: 0.1rem;
+  padding: 0.85rem 2.1rem 0.95rem;
+  margin-bottom: 2rem;
+  color: var(--pin);
+  border: 2px solid currentColor;
+  border-radius: 3px;
+  /* The inner hairline is what makes it read as a stamp and not a button. */
+  box-shadow: inset 0 0 0 1px currentColor;
+  transform: rotate(-7deg);
+  /* Ink sinks into the paper instead of sitting on top of it. */
+  mix-blend-mode: multiply;
+  opacity: 0.78;
 }
 
-.reg-closed__icon {
-  font-size: 1.6rem;
+.reg-stamp__edge,
+.reg-stamp__sub {
+  font-family: var(--mono);
+  font-size: 0.56rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+
+.reg-stamp__main {
+  font-family: var(--display);
+  font-size: clamp(2rem, 7vw, 3rem);
+  font-weight: 600;
   line-height: 1;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin: 0.15rem 0 0.25rem;
+}
+
+/* --- Heading block --- */
+.reg-closed__kicker {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(61, 52, 40, 0.6);
+  margin: 0 0 0.7rem;
 }
 
 .reg-closed__title {
   font-family: var(--display);
-  font-size: clamp(1.8rem, 4vw, 2.4rem);
+  font-weight: 600;
+  font-size: clamp(1.7rem, 5vw, 2.6rem);
+  line-height: 1.1;
   text-transform: uppercase;
+  letter-spacing: 0.05em;
   color: var(--ink);
-  margin: 0 0 0.8rem;
-  letter-spacing: 0.04em;
+  margin: 0 0 1.1rem;
 }
 
 .reg-closed__message {
   font-family: var(--typewriter);
   font-size: 0.95rem;
-  color: var(--ink-muted);
-  line-height: 1.7;
-  margin: 0 0 2rem;
-}
-
-.reg-closed__links {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  align-items: stretch;
-  margin-bottom: 1.75rem;
-}
-
-.reg-btn--outline {
-  background: rgba(0, 0, 0, 0.04);
-  color: var(--ink);
-  border: 1px solid rgba(0, 0, 0, 0.25);
-}
-
-.reg-btn--outline:hover {
-  background: var(--ink);
-  color: var(--paper);
-  transform: translateY(-1px);
-}
-
-.reg-closed__note {
-  font-family: var(--mono);
-  font-size: 0.76rem;
   line-height: 1.8;
   color: var(--ink-muted);
+  max-width: 30rem;
+  margin: 0 auto;
+}
+
+/* --- Divider --- */
+.reg-closed__rule {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  max-width: 22rem;
+  margin: 2.25rem auto 1.75rem;
+}
+
+.reg-closed__rule-line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(26, 21, 16, 0.35));
+}
+
+.reg-closed__rule-line:last-child {
+  background: linear-gradient(90deg, rgba(26, 21, 16, 0.35), transparent);
+}
+
+.reg-closed__rule-mark {
+  color: rgba(26, 21, 16, 0.5);
+  font-size: 0.7rem;
+  line-height: 1;
+}
+
+/* --- The two ways out --- */
+.reg-closed__links {
+  display: grid;
+  gap: 0.7rem;
+  margin-bottom: 1.9rem;
+  text-align: left;
+}
+
+.reg-doorway {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.85rem 1.1rem;
+  border: 1px solid rgba(26, 21, 16, 0.3);
+  border-radius: 3px;
+  background: rgba(255, 253, 245, 0.22);
+  color: var(--ink);
+  text-decoration: none;
+  transition: background 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+}
+
+.reg-doorway:hover {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+  transform: translateY(-2px);
+}
+
+.reg-doorway__num {
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.16em;
+  opacity: 0.55;
+}
+
+.reg-doorway__text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.reg-doorway__label {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  opacity: 0.6;
+}
+
+.reg-doorway__value {
+  font-family: var(--typewriter);
+  font-size: 0.98rem;
+  line-height: 1.3;
+}
+
+.reg-doorway__arrow {
+  font-size: 1.05rem;
+  transition: transform 0.18s ease;
+}
+
+.reg-doorway:hover .reg-doorway__arrow {
+  transform: translateX(4px);
+}
+
+/* --- Footer note --- */
+.reg-closed__note {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  line-height: 2;
+  color: rgba(61, 52, 40, 0.7);
   margin: 0;
 }
 
 .reg-closed__note a {
   color: var(--ink);
+  text-decoration-color: rgba(26, 21, 16, 0.35);
+  text-underline-offset: 3px;
 }
 
-@media (min-width: 540px) {
+.reg-closed__note a:hover {
+  text-decoration-color: currentColor;
+}
+
+@media (min-width: 620px) {
+  .reg-closed {
+    padding: 2rem 1.5rem 1.25rem;
+  }
+
   .reg-closed__links {
-    flex-direction: row;
-    justify-content: center;
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* The stamp is placed by hand; honour a reduced-motion preference by not
+   animating anything here — there is nothing to animate — but do drop the
+   tilt for anyone who finds rotated text harder to read. */
+@media (prefers-reduced-motion: reduce) {
+  .reg-stamp {
+    transform: none;
   }
 }
