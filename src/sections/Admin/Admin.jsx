@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { supabase } from '../../lib/supabase'
-import { FORMS_OPEN, CLOSED_MESSAGE } from '../../lib/settings'
+import { fetchFormStatus, setFormStatus, DEFAULT_CLOSED_MESSAGE } from '../../lib/settings'
 import './Admin.css'
 
 // Mirrors the recruitment form's own choices, so an edit cannot produce a
@@ -329,37 +329,122 @@ function EditPanel({ row, onClose, onSaved, onDeleted }) {
 }
 
 /**
- * Shows whether the public recruitment form is accepting applications.
- * The switch itself is a frontend constant (src/lib/settings.js) — there is no
- * database flag — so changing it is an edit and a redeploy, not a button here.
+ * Open or close the public recruitment form. Closing is enforced in the
+ * database too (the insert policy checks the same switch), so applications
+ * cannot arrive through the API once this is off.
  */
 function FormStatusPanel() {
+  const [formsOpen, setFormsOpen] = useState(true)
+  const [message, setMessage] = useState(DEFAULT_CLOSED_MESSAGE)
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+  const [notice, setNotice] = useState('')
+
+  useEffect(() => {
+    let active = true
+    fetchFormStatus().then((status) => {
+      if (!active) return
+      setFormsOpen(status.formsOpen)
+      setMessage(status.closedMessage)
+      setError(status.error)
+      setLoading(false)
+    })
+    return () => {
+      active = false
+    }
+  }, [])
+
+  const apply = async (nextOpen) => {
+    setSaving(true)
+    setError('')
+    setNotice('')
+
+    const result = await setFormStatus({
+      formsOpen: nextOpen,
+      closedMessage: message.trim() || DEFAULT_CLOSED_MESSAGE,
+    })
+
+    setSaving(false)
+
+    if (result.error) {
+      setError(result.error)
+      return
+    }
+    setFormsOpen(result.formsOpen)
+    setMessage(result.closedMessage)
+    setNotice(nextOpen ? 'Applications are open again.' : 'Applications are now closed.')
+  }
+
+  if (loading) {
+    return <p className="admin-empty">Checking form status…</p>
+  }
+
   return (
-    <section className={`admin-status ${FORMS_OPEN ? 'is-open' : 'is-closed'}`}>
+    <section className={`admin-status ${formsOpen ? 'is-open' : 'is-closed'}`}>
       <div className="admin-status__head">
         <div>
           <p className="admin-kicker">Recruitment form</p>
           <h2 className="admin-status__title">
             <span className="admin-status__dot" />
-            {FORMS_OPEN ? 'Applications are OPEN' : 'Applications are CLOSED'}
+            {formsOpen ? 'Applications are OPEN' : 'Applications are CLOSED'}
           </h2>
           <p className="admin-dash__meta">
-            {FORMS_OPEN
+            {formsOpen
               ? 'The public form at / is accepting new applications.'
-              : 'Visitors to / see the closed notice instead of the form — there is nothing to fill in or submit.'}
+              : 'Visitors to / see the closed notice below instead of the form.'}
           </p>
+        </div>
+
+        <div className="admin-status__actions">
+          {formsOpen ? (
+            <button
+              type="button"
+              className="admin-btn admin-btn--danger admin-btn--big"
+              onClick={() => apply(false)}
+              disabled={saving}
+            >
+              {saving ? 'Closing…' : 'Close Recruitment Forms'}
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="admin-btn admin-btn--primary admin-btn--big"
+              onClick={() => apply(true)}
+              disabled={saving}
+            >
+              {saving ? 'Reopening…' : 'Reopen Recruitment Forms'}
+            </button>
+          )}
         </div>
       </div>
 
-      {!FORMS_OPEN && (
-        <p className="admin-status__quote">“{CLOSED_MESSAGE}”</p>
-      )}
+      <label className="admin-label" htmlFor="closed-message">
+        Message shown to applicants while the form is closed
+      </label>
+      <textarea
+        id="closed-message"
+        className="admin-input"
+        rows={3}
+        value={message}
+        onChange={(e) => setMessage(e.target.value)}
+      />
+      <div className="admin-status__foot">
+        <button
+          type="button"
+          className="admin-btn"
+          onClick={() => apply(formsOpen)}
+          disabled={saving}
+        >
+          {saving ? 'Saving…' : 'Save Message'}
+        </button>
+        <span className="admin-dash__meta">
+          Applicants are also pointed to leadtiet.in/contact for doubts.
+        </span>
+      </div>
 
-      <p className="admin-dash__meta">
-        To {FORMS_OPEN ? 'close' : 'reopen'} recruitment, set{' '}
-        <code>FORMS_OPEN = {FORMS_OPEN ? 'false' : 'true'}</code> in{' '}
-        <code>src/lib/settings.js</code> and redeploy.
-      </p>
+      {error && <p className="admin-error">{error}</p>}
+      {notice && <p className="admin-notice">{notice}</p>}
     </section>
   )
 }

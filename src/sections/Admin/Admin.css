@@ -449,9 +449,10 @@ textarea.admin-input {
   color: #6fdca0;
 }
 
-.admin-status__quote {
-  font-style: italic;
-  line-height: 1.6;
-  margin: 0 0 0.6rem;
-  opacity: 0.85;
+/* The open/close control is the one destructive-ish action on this page,
+   so it is sized to be found and not mistaken for the table buttons. */
+.admin-btn--big {
+  padding: 0.7rem 1.4rem;
+  font-size: 0.9rem;
+  letter-spacing: 0.08em;
 }
